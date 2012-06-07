@@ -17,7 +17,7 @@ Socket Socket::gSharedSocket;
 
 int gSocketFD = -1;
 
-bool	Socket::Connect( const char* ip, int port )
+int 	Socket::Connect( const char* ip, int port )
 {
 	gSocketFD = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -34,7 +34,7 @@ bool	Socket::Connect( const char* ip, int port )
 
 	int result = connect(gSocketFD,(struct sockaddr *)  &pin, sizeof(pin)); 
 
-	return result != 0 ? true : false;
+	return result;
 }
 
 void	Socket::Disconnect( void )

@@ -38,26 +38,30 @@
 - (void)ButtonClickedConnect
 {
 	if (mIsConnected) return;
+	
+	int result = Socket::gSharedSocket.Connect("192.168.0.100", 12345);
+	
+	NSTimer* timer = [NSTimer timerWithTimeInterval:0.1 target:self selector:@selector(handleTimer) userInfo:nil repeats:YES]; 
+	[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
 
-	if (Socket::gSharedSocket.Connect("192.168.0.100", 12345))
+	if (result == -1) // result always -1?
 	{
-		self.view.backgroundColor = [UIColor blueColor];
+	
+		//self.view.backgroundColor = [UIColor blueColor];
 
-		NSTimer* timer = [NSTimer timerWithTimeInterval:0.1 target:self selector:@selector(handleTimer) userInfo:nil repeats:YES]; 
-		[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+
 
 		mIsConnected = true;
+
 	}else
 	{
-		self.view.backgroundColor = [UIColor whiteColor];
+		//self.view.backgroundColor = [UIColor whiteColor];
 	}
 }
 
 - (void)ButtonClickedSend
 {
-	//if (!mIsConnected) return;
-
-	const char* data = "start moive";
+	const char* data = "START";
 
 	int dataLength = strlen(data);
 

@@ -9,7 +9,7 @@ public:
 	{
 	}
 
-	bool    Connect    ( const char* ip, int port );
+	int     Connect    ( const char* ip, int port );
 	void	Disconnect ( void );
 	void    Recv       ( char* buffer, int bufferSize );
 	void	Send       ( const char* buffer, int bufferSize );
