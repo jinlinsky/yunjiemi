@@ -1,6 +1,6 @@
-include theos/makefiles/common.mk
+include /var/theos/makefiles/common.mk
 
 APPLICATION_NAME = YunJieMi
-YunJieMi_FILES = main.m YunJieMiApplication.mm RootViewController.mm Socket.mm
+YunJieMi_FILES = main.m YunJieMiApplication.mm RootViewController.mm Socket.mm File.mm
 
-include $(THEOS_MAKE_PATH)/application.mk
+include /var/theos/makefiles/application.mk

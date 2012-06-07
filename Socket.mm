@@ -21,8 +21,8 @@ int 	Socket::Connect( const char* ip, int port )
 {
 	gSocketFD = socket(AF_INET, SOCK_STREAM, 0);
 
-	unsigned long nonblock = 1;
-	ioctl(gSocketFD, FIONBIO, &nonblock);
+	//unsigned long nonblock = 1;
+	//ioctl(gSocketFD, FIONBIO, &nonblock);
 
 	struct hostent* hp = gethostbyname(ip);
 

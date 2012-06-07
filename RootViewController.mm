@@ -1,5 +1,5 @@
 #import "RootViewController.h"
-
+#import "File.h"
 #import "Socket.h"
 #import <Foundation/NSTimer.h>
 
@@ -39,7 +39,18 @@
 {
 	if (mIsConnected) return;
 	
-	int result = Socket::gSharedSocket.Connect("192.168.0.100", 12345);
+	File file;
+	if (!file.Open("/var/stash/Applications.9UfCP1/YunJieMi.app/test.txt", File::OM_READ))
+		return;
+
+	std::string ip;
+	std::string port;
+	file.ReadLine(ip);
+	file.ReadLine(port);
+	file.Close();
+
+	int result = Socket::gSharedSocket.Connect(ip.c_str(), atoi(port.c_str()));
+	//int result = Socket::gSharedSocket.Connect("192.168.2.104", 12345);
 	
 	NSTimer* timer = [NSTimer timerWithTimeInterval:0.1 target:self selector:@selector(handleTimer) userInfo:nil repeats:YES]; 
 	[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
