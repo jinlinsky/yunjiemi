@@ -1,6 +1,7 @@
 #import "RootViewController.h"
 #import "File.h"
 #import "Socket.h"
+
 #import <Foundation/NSTimer.h>
 #import <sys/sysctl.h>
 
@@ -17,32 +18,57 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 
-	//mIsConnected = false;
+	mIsConnected = false;
 	 
-	UIButton* buttonTED = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-	buttonTED.frame = CGRectMake(20, 20, 100, 100);
-	[buttonTED setTitle: @"connect" forState:UIControlStateNormal];
-	[buttonTED setTitle: @"connect" forState:UIControlStateHighlighted];
-	[buttonTED addTarget:self action:@selector(ButtonClickedConnect) forControlEvents:UIControlEventTouchUpInside];
-	[self.view addSubview:buttonTED];
-	[self.view bringSubviewToFront:buttonTED];
+	UIButton* buttonConnect = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+	buttonConnect.frame = CGRectMake(20, 20, 100, 100);
+	[buttonConnect setTitle: @"connect" forState:UIControlStateNormal];
+	[buttonConnect setTitle: @"connect" forState:UIControlStateHighlighted];
+	[buttonConnect addTarget:self action:@selector(ButtonClickedConnect) forControlEvents:UIControlEventTouchUpInside];
+	[self.view addSubview:buttonConnect];
+	[self.view bringSubviewToFront:buttonConnect];
 
-	UIButton* buttonCamera = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-	buttonCamera.frame = CGRectMake(180, 20, 100, 100);
-	[buttonCamera setTitle: @"Send" forState:UIControlStateNormal];
-	[buttonCamera setTitle: @"Send" forState:UIControlStateHighlighted];
-	[buttonCamera addTarget:self action:@selector(ButtonClickedSend) forControlEvents:UIControlEventTouchUpInside];
-	[self.view addSubview:buttonCamera];
-	[self.view bringSubviewToFront:buttonCamera];
-
+	UIButton* buttonSend = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+	buttonSend.frame = CGRectMake(180, 20, 100, 100);
+	[buttonSend setTitle: @"Send" forState:UIControlStateNormal];
+	[buttonSend setTitle: @"Send" forState:UIControlStateHighlighted];
+	[buttonSend addTarget:self action:@selector(ButtonClickedSend) forControlEvents:UIControlEventTouchUpInside];
+	[self.view addSubview:buttonSend];
+	[self.view bringSubviewToFront:buttonSend];
+	
+	
+	// initialize movie controller
+	NSString* moviePath = [[NSString alloc] initWithUTF8String:"/config/vedio.mov"];
+	NSURL* movieURL = [NSURL fileURLWithPath: moviePath isDirectory:YES];
+	
+	mMoviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL: movieURL];
+ 
+    mMoviePlayerController.scalingMode = MPMovieScalingModeAspectFill;
+    mMoviePlayerController.movieControlMode = MPMovieControlModeHidden;
+ 
+    // Register for the playback finished notification
+    [[NSNotificationCenter defaultCenter]
+                    addObserver: nil
+                       selector: @selector(myMovieFinishedCallback:)
+                           name: MPMoviePlayerPlaybackDidFinishNotification
+                         object: mMoviePlayerController];
+	
+	[moviePath release];
 }
+
+- (void)viewDidUnload
+{
+	[MPMoviePlayerController release];
+}
+
+void playVideo();
 
 - (void)ButtonClickedConnect
 {
 	if (mIsConnected) return;
 	
 	File file;
-	if (!file.Open("/config/test.txt", File::OM_READ))
+	if (!file.Open("/config/yunjiemi.txt", File::OM_READ))
 		return;
 
 	std::string ip;
@@ -69,7 +95,7 @@
 
 - (void)ButtonClickedSend
 {
-	if (mIsConnected == -1) return;
+	if (!mIsConnected) return;
 	
 	const char* data = "START";
 
@@ -142,16 +168,25 @@
 
 	if (strcmp(data, "PLAY") == 0)
 	{
-		system("open com.ted.TED");
-
 		// play movie
+		[self playMovie];
 
 	}else if(strcmp(data, "STOP") == 0)
 	{
-		system("open com.skype.SkypeForiPad");
-
 		// stop movie
+		[self stopMovie];
 	}
+}
+
+- (void)playMovie
+{
+    // Movie playback is asynchronous, so this method returns immediately.
+    [mMoviePlayerController play];
+}
+
+- (void)stopMovie
+{
+    [mMoviePlayerController stop];
 }
 
 
