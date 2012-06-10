@@ -1,43 +1,32 @@
 #import "RootViewController.h"
+// import
 #import "File.h"
 #import "Socket.h"
-
 #import <Foundation/NSTimer.h>
 #import <sys/sysctl.h>
-
+// include
 #include <string.h>
 
 @implementation RootViewController
 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+	return YES;
+}
 
 - (void)loadView {
 	self.view = [[[UIView alloc] initWithFrame:[[UIScreen mainScreen] applicationFrame]] autorelease];
 	self.view.backgroundColor = [UIColor whiteColor];
+	
 }
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
-
-	mIsConnected = false;
-	 
-	UIButton* buttonConnect = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-	buttonConnect.frame = CGRectMake(20, 20, 100, 100);
-	[buttonConnect setTitle: @"connect" forState:UIControlStateNormal];
-	[buttonConnect setTitle: @"connect" forState:UIControlStateHighlighted];
-	[buttonConnect addTarget:self action:@selector(ButtonClickedConnect) forControlEvents:UIControlEventTouchUpInside];
-	[self.view addSubview:buttonConnect];
-	[self.view bringSubviewToFront:buttonConnect];
-
-	UIButton* buttonSend = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-	buttonSend.frame = CGRectMake(180, 20, 100, 100);
-	[buttonSend setTitle: @"Send" forState:UIControlStateNormal];
-	[buttonSend setTitle: @"Send" forState:UIControlStateHighlighted];
-	[buttonSend addTarget:self action:@selector(ButtonClickedSend) forControlEvents:UIControlEventTouchUpInside];
-	[self.view addSubview:buttonSend];
-	[self.view bringSubviewToFront:buttonSend];
 	
 	
+	//----------------------------------------------------------
 	// initialize movie controller
+	//----------------------------------------------------------
 	NSString* moviePath = [[NSString alloc] initWithUTF8String:"/config/vedio.mov"];
 	NSURL* movieURL = [NSURL fileURLWithPath: moviePath isDirectory:YES];
 	
@@ -54,22 +43,21 @@
                          object: mMoviePlayerController];
 	
 	[moviePath release];
-}
-
-- (void)viewDidUnload
-{
-	[MPMoviePlayerController release];
-}
-
-void playVideo();
-
-- (void)ButtonClickedConnect
-{
-	if (mIsConnected) return;
 	
+	
+	
+	CGRect screenFrame = [[UIScreen mainScreen] applicationFrame];
+	
+	//----------------------------------------------------------
+	// initialize socket connection
+	//----------------------------------------------------------
 	File file;
-	if (!file.Open("/config/yunjiemi.txt", File::OM_READ))
+	int result = (int)file.Open("/config/yunjiemi.txt", File::OM_READ);
+	if (result == 0)
+	{
+		self.view.backgroundColor = [UIColor redColor];
 		return;
+	}
 
 	std::string ip;
 	std::string port;
@@ -77,32 +65,46 @@ void playVideo();
 	file.ReadLine(port);
 	file.Close();
 
-	int result = Socket::gSharedSocket.Connect(ip.c_str(), atoi(port.c_str()));
-	//int result = Socket::gSharedSocket.Connect("192.168.2.104", 12345);
+	result = Socket::gSharedSocket.Connect(ip.c_str(), atoi(port.c_str()));
 	
-	NSTimer* timer = [NSTimer timerWithTimeInterval:0.1 target:self selector:@selector(handleTimer) userInfo:nil repeats:YES]; 
-	[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
-
-	if (result != -1)
+	if (result == -1)
 	{
-		mIsConnected = true;
-		self.view.backgroundColor = [UIColor blueColor];
-	}else
-	{
-		self.view.backgroundColor = [UIColor whiteColor];
+		self.view.backgroundColor = [UIColor redColor];
+		return;
 	}
+	
+	mIsConnected = true;
+	
+	//----------------------------------------------------------
+	// wating label
+	//----------------------------------------------------------
+	CGRect labelFrame = screenFrame;
+	labelFrame.origin.x = 0;
+	labelFrame.origin.y = 0;
+	
+	mWaitingLabel = [[UILabel alloc] initWithFrame:labelFrame];
+	mWaitingLabel.numberOfLines = 0;
+	mWaitingLabel.textAlignment = UITextAlignmentCenter;
+	mWaitingLabel.text = [[NSString alloc] initWithString:@"Waiting..."];
+	[self.view addSubview:mWaitingLabel];
+	[self.view bringSubviewToFront:mWaitingLabel];
+	
+	//----------------------------------------------------------
+	// setup timer
+	//----------------------------------------------------------
+	NSTimer* timer = [NSTimer timerWithTimeInterval:0.1 target:self selector:@selector(MessageReceiverTimer) userInfo:nil repeats:YES]; 
+	[[NSRunLoop currentRunLoop] addTimer:timer forMode:NSDefaultRunLoopMode];
+}
+
+- (void)viewDidUnload
+{
+	[mMoviePlayerController release];
+	mIsConnected = false;
+	Socket::gSharedSocket.Disconnect();
 }
 
 - (void)ButtonClickedSend
 {
-	if (!mIsConnected) return;
-	
-	const char* data = "START";
-
-	int dataLength = strlen(data);
-
-	Socket::gSharedSocket.Send(data, dataLength);
-	
 /*
 	// get process information
 	int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0};
@@ -160,7 +162,7 @@ void playVideo();
 */
 }
 
-- (void)handleTimer
+- (void)MessageReceiverTimer
 {
 	char data[512] = "";
 	
@@ -181,12 +183,18 @@ void playVideo();
 - (void)playMovie
 {
     // Movie playback is asynchronous, so this method returns immediately.
-    [mMoviePlayerController play];
+	if (mMoviePlayerController != nil)
+    {
+		[mMoviePlayerController play];
+	}
 }
 
 - (void)stopMovie
 {
-    [mMoviePlayerController stop];
+	if (mMoviePlayerController != nil)
+	{
+		[mMoviePlayerController stop];
+	}
 }
 
 

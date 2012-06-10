@@ -1,6 +1,14 @@
 {
     CFBundleExecutable = "YunJieMi";
-    CFBundleIconFile = icon.png;
+    CFBundleIconFile = "Icon.png";	
+	CFBundleIconFiles = (
+		"Icon.png",
+		"icon-72.png",
+		"icon-72@2x.png",
+		"icon@2x.png",
+		"Icon-Small.png",
+		"Icon-Small@2x.png",
+	);
     CFBundleIdentifier = "com.feilaifeiqu.yunjiemi";
     CFBundleInfoDictionaryVersion = 6.0;
     CFBundlePackageType = APPL;
@@ -13,4 +21,9 @@
     DTSDKName = iphoneos3.0;
     LSRequiresIPhoneOS = 1;
     MinimumOSVersion = 3.0;
+	
+	UIDeviceFamily = (
+		1,
+		2
+	);
 }
