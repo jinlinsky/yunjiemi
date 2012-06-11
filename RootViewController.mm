@@ -55,7 +55,7 @@
 	int result = (int)file.Open("/config/yunjiemi.txt", File::OM_READ);
 	if (result == 0)
 	{
-		self.view.backgroundColor = [UIColor redColor];
+		self.view.backgroundColor = [UIColor blueColor];
 		return;
 	}
 
