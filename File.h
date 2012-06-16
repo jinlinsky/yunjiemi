@@ -36,9 +36,9 @@ public:
 	/*
 	override read & write
 	*/
-	void			Read	( void* data, int size );
+	int			Read	( void* data, int size );
 
-	void			Write	( void* data, int size );
+	int			Write	( void* data, int size );
 
 	/*
 	method
@@ -53,9 +53,9 @@ public:
 	template
 	*/
 	template<typename T>
-	void			Read	( T&					value )
+	int			Read	( T&					value )
 	{
-		Read((void*)&value, sizeof(T));
+		return Read((void*)&value, sizeof(T));
 	}
 	/* read string */
 	void			Read	( std::string&			value )
@@ -72,20 +72,44 @@ public:
 	}
 
 	/* read line */
-	void			ReadLine( std::string&			value )
+	bool			ReadLine( std::string&			value )
 	{
 		char c = 0;
 
 		value.clear();
 		while (1)
 		{
-			Read(c);
+			int size = Read(c);
+			if (value.length() == 0 && size <= 0)
+				return false;
 
 			if (c == '\n')
 				break;
 
 			value.append(1, c);
 		}
+
+		return true;
+	}
+
+	template<typename T>
+	void			Write	( const T&				value )
+	{
+		Write((void*)&value, sizeof(T));
+	}
+	/* write string */
+	void			Write	( const std::string&	value )
+	{
+		Write(value.size());
+
+		for (int i = 0; i < (int)value.size(); ++i)
+			Write(value[i]);
+	}
+	/* write line */
+	void			WriteLine( const std::string&	value )
+	{
+		std::string line = value + "\n";
+		Write((void*)line.c_str(), line.length());
 	}
 
 protected:
