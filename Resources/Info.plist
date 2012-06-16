@@ -9,7 +9,7 @@
 		"Icon-Small.png",
 		"Icon-Small@2x.png",
 	);
-    CFBundleIdentifier = "com.feilaifeiqu.yunjiemi";
+    CFBundleIdentifier = "com.jinlin.yunjiemi";
     CFBundleInfoDictionaryVersion = 6.0;
     CFBundlePackageType = APPL;
     CFBundleSignature = "????";
