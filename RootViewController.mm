@@ -6,6 +6,7 @@
 #import <sys/sysctl.h>
 // include
 #include <string.h>
+#include "Config.h"
 
 @implementation RootViewController
 
@@ -51,22 +52,18 @@
 	//----------------------------------------------------------
 	// initialize socket connection
 	//----------------------------------------------------------
-	File file;
-	int result = (int)file.Open("/config/yunjiemi.txt", File::OM_READ);
-	if (result == 0)
+	Config config;
+	bool loadConfig = config.LoadConfig("/config/yunjiemi.txt");
+	if (!loadConfig)
 	{
 		self.view.backgroundColor = [UIColor blueColor];
 		return;
 	}
 
-	std::string ip;
-	std::string port;
-	file.ReadLine(ip);
-	file.ReadLine(port);
-	file.Close();
+	std::string ip   = config.GetText("ip");
+	std::string port = config.GetText("port");
 
-	result = Socket::gSharedSocket.Connect(ip.c_str(), atoi(port.c_str()));
-	
+	int result = Socket::gSharedSocket.Connect(ip.c_str(), atoi(port.c_str()), false);
 	if (result == -1)
 	{
 		self.view.backgroundColor = [UIColor redColor];
