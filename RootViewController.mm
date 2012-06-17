@@ -1,12 +1,12 @@
 #import "RootViewController.h"
 // import
-#import "File.h"
-#import "Socket.h"
 #import <Foundation/NSTimer.h>
 #import <sys/sysctl.h>
 // include
 #include <string.h>
 #include "Config.h"
+#include "File.h"
+#include "Socket.h"
 
 @implementation RootViewController
 
@@ -53,7 +53,7 @@
 	// initialize socket connection
 	//----------------------------------------------------------
 	Config config;
-	bool loadConfig = config.LoadConfig("/config/yunjiemi.txt");
+	bool loadConfig = config.LoadConfig("/config/config.txt");
 	if (!loadConfig)
 	{
 		self.view.backgroundColor = [UIColor blueColor];
@@ -96,67 +96,12 @@
 - (void)viewDidUnload
 {
 	[mMoviePlayerController release];
-	mIsConnected = false;
-	Socket::gSharedSocket.Disconnect();
-}
-
-- (void)ButtonClickedSend
-{
-/*
-	// get process information
-	int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0};
-    size_t miblen = 4;
-
-    size_t size;
-    int st = sysctl(mib, miblen, NULL, &size, NULL, 0);
-
-    struct kinfo_proc * process = NULL;
-    struct kinfo_proc * newprocess = NULL;
-
-    do {
-
-        size += size / 10;
-        newprocess = (kinfo_proc *)realloc(process, size);
-
-        if (!newprocess){
-
-            if (process){
-                free(process);
-            }
-
-            return;
-        }
-
-        process = newprocess;
-        st = sysctl(mib, miblen, process, &size, NULL, 0);
-
-    } while (st == -1 && errno == ENOMEM);
-
-    if (st == 0){
-
-        if (size % sizeof(struct kinfo_proc) == 0){
-            int nprocess = size / sizeof(struct kinfo_proc);
-
-            if (nprocess){
-
-                for (int i = nprocess - 1; i >= 0; i--){
-
-                    NSString * processID = [[NSString alloc] initWithFormat:@"%d", process[i].kp_proc.p_pid];
-                    NSString * processName = [[NSString alloc] initWithFormat:@"%s", process[i].kp_proc.p_comm];
-					
-					const char* nameData = [processName UTF8String];
-					int nameDataLength = strlen(nameData);
-					Socket::gSharedSocket.Send(nameData, nameDataLength);
-					
-                    [processID release];
-                    [processName release];
-                }
-
-                free(process);
-            }
-        }
-    }
-*/
+	
+	if (mIsConnected)
+	{
+		Socket::gSharedSocket.Disconnect();
+		mIsConnected = false;
+	}
 }
 
 - (void)MessageReceiverTimer
