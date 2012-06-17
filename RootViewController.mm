@@ -24,7 +24,6 @@
 - (void)viewDidLoad {
 	[super viewDidLoad];
 	
-	
 	//----------------------------------------------------------
 	// initialize movie controller
 	//----------------------------------------------------------
@@ -44,8 +43,6 @@
                          object: mMoviePlayerController];
 	
 	[moviePath release];
-	
-	
 	
 	CGRect screenFrame = [[UIScreen mainScreen] applicationFrame];
 	
@@ -73,18 +70,22 @@
 	mIsConnected = true;
 	
 	//----------------------------------------------------------
-	// wating label
+	// background
 	//----------------------------------------------------------
-	CGRect labelFrame = screenFrame;
-	labelFrame.origin.x = 0;
-	labelFrame.origin.y = 0;
+	UIImageView* bgImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"ipad_background.jpg"]];
 	
-	mWaitingLabel = [[UILabel alloc] initWithFrame:labelFrame];
-	mWaitingLabel.numberOfLines = 0;
-	mWaitingLabel.textAlignment = UITextAlignmentCenter;
-	mWaitingLabel.text = [[NSString alloc] initWithString:@"Waiting..."];
-	[self.view addSubview:mWaitingLabel];
-	[self.view bringSubviewToFront:mWaitingLabel];
+	[self.view addSubview:bgImage];
+	[self.view bringSubviewToFront:bgImage];
+	[bgImage release];
+	
+	//----------------------------------------------------------
+	// logo
+	//----------------------------------------------------------
+	UIImageView* logImage = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"ipad_icon.png"]];
+	
+	[self.view addSubview:logImage];
+	[self.view bringSubviewToFront:logImage];
+	[logImage release];
 	
 	//----------------------------------------------------------
 	// setup timer
