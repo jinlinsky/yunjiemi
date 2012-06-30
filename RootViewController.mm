@@ -24,7 +24,7 @@
 	[super viewDidLoad];
 	
 	//----------------------------------------------------------
-	// initialize socket connection
+	// read config file
 	//----------------------------------------------------------
 	Config config;
 	bool loadConfig = config.LoadConfig("/config/config.txt");
@@ -105,7 +105,7 @@
 {
 	char data_receive[512] = "";
 	
-	// try to receive the data from server
+	// try to receive the data from the server
 	// it can also reset the socket state if the connection is broken
 	Socket::gSharedSocket.Recv(data_receive, 512);
 	
