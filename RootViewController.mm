@@ -3,7 +3,6 @@
 #import <Foundation/NSTimer.h>
 #import <sys/sysctl.h>
 // include
-#include <string.h>
 #include "Config.h"
 #include "File.h"
 #include "Socket.h"
@@ -23,6 +22,27 @@
 
 - (void)viewDidLoad {
 	[super viewDidLoad];
+	
+	//----------------------------------------------------------
+	// initialize socket connection
+	//----------------------------------------------------------
+	Config config;
+	bool loadConfig = config.LoadConfig("/config/config.txt");
+	if (!loadConfig)
+	{
+		UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"error message"
+		message:@"read config.txt failed!"
+		delegate:nil
+		cancelButtonTitle:@"OK"
+		otherButtonTitles:nil];
+		[alert show];
+		[alert release];
+		
+		return;
+	}
+
+	mIp   = [[NSString alloc] initWithFormat: @"%s", config.GetText("ip").c_str()];
+	mPort = [[NSString alloc] initWithFormat: @"%s", config.GetText("port").c_str()];
 	
 	//----------------------------------------------------------
 	// initialize movie controller
@@ -45,30 +65,7 @@
 	[moviePath release];
 	
 	CGRect screenFrame = [[UIScreen mainScreen] applicationFrame];
-	
-	//----------------------------------------------------------
-	// initialize socket connection
-	//----------------------------------------------------------
-	Config config;
-	bool loadConfig = config.LoadConfig("/config/config.txt");
-	if (!loadConfig)
-	{
-		self.view.backgroundColor = [UIColor blueColor];
-		return;
-	}
 
-	std::string ip   = config.GetText("ip");
-	std::string port = config.GetText("port");
-
-	int result = Socket::gSharedSocket.Connect(ip.c_str(), atoi(port.c_str()), false);
-	if (result == -1)
-	{
-		self.view.backgroundColor = [UIColor redColor];
-		return;
-	}
-	
-	mIsConnected = true;
-	
 	//----------------------------------------------------------
 	// background
 	//----------------------------------------------------------
@@ -98,25 +95,40 @@
 {
 	[mMoviePlayerController release];
 	
-	if (mIsConnected)
+	if (Socket::gSharedSocket.GetConnectState() != Socket::CS_NOT_CONNECTED)
 	{
 		Socket::gSharedSocket.Disconnect();
-		mIsConnected = false;
 	}
 }
 
 - (void)MessageReceiverTimer
 {
-	char data[512] = "";
+	char data_receive[512] = "";
 	
-	Socket::gSharedSocket.Recv(data, 512);
-
-	if (strcmp(data, "PLAY") == 0)
+	// try to receive the data from server
+	// it can also reset the socket state if the connection is broken
+	Socket::gSharedSocket.Recv(data_receive, 512);
+	
+	if (Socket::gSharedSocket.GetConnectState() == Socket::CS_NOT_CONNECTED)
+	{
+		Socket::gSharedSocket.Connect([mIp UTF8String], atoi([mPort UTF8String]), true);
+	
+		return;
+	}else if (Socket::gSharedSocket.GetConnectState() == Socket::CS_CONNECTING)
+	{
+		//self.view.backgroundColor = [UIColor redColor];
+		
+		// do something here to show the current state is conneccting
+		
+		return;
+	}
+	
+	if (strcmp(data_receive, "PLAY") == 0)
 	{
 		// play movie
 		[self playMovie];
 
-	}else if(strcmp(data, "STOP") == 0)
+	}else if(strcmp(data_receive, "STOP") == 0)
 	{
 		// stop movie
 		[self stopMovie];
